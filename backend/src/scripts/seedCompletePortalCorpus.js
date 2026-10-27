@@ -1104,11 +1104,17 @@ async function seedCompleteCorpus() {
   console.log(`- Weekly Progress Records:    ${totalProgress} progress logs`);
   console.log('======================================================\n');
 
-  await mongoose.disconnect();
-  process.exit(0);
+  if (require.main === module) {
+    await mongoose.disconnect();
+    process.exit(0);
+  }
 }
 
-seedCompleteCorpus().catch((err) => {
-  console.error('[Corpus Seed Error]:', err);
-  process.exit(1);
-});
+module.exports = seedCompleteCorpus;
+
+if (require.main === module) {
+  seedCompleteCorpus().catch((err) => {
+    console.error('[Corpus Seed Error]:', err);
+    process.exit(1);
+  });
+}

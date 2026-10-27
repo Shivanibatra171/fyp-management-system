@@ -13,6 +13,19 @@ const startServer = async () => {
   try {
     await connectDB();
 
+    // Auto-seed if newly connected empty cloud database
+    try {
+      const { User } = require('./src/models');
+      const userCount = await User.countDocuments();
+      if (userCount === 0) {
+        console.log('[Server Startup] Empty database detected. Auto-seeding initial users, proposals, and past FYPs...');
+        const seedCompleteCorpus = require('./src/scripts/seedCompletePortalCorpus');
+        await seedCompleteCorpus();
+      }
+    } catch (seedErr) {
+      console.warn('[Server Startup] Auto-seed notice:', seedErr.message);
+    }
+
     const server = app.listen(PORT, () => {
       console.log(
         `[Server] FYP Management Backend running in ${
