@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+*/node_modules/
+.venv/
+*/.venv/
+__pycache__/
+*/__pycache__/
+*.pyc
+
+# Environment Variables & Keys
+.env
+*/.env
+.env.local
+.env.*.local
+
+# Databases & Runtime Data
+data_db/
+backend/data_db/
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Build Outputs
+dist/
+*/dist/
+build/
+*/build/
+
+# Tunnel & Logs
+cloudflared.exe
+CURRENT_LIVE_URL.txt
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,18 @@
+services:
+  # Unified Full-Stack Portal (React SPA + Express REST API + Embedded Semantic AI Engine)
+  # Fits 100% within Render's Free Tier with 0 credit card required!
+  - type: web
+    name: fyp-management-portal
+    env: node
+    plan: free
+    buildCommand: "npm run build"
+    startCommand: "npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false # Set your MongoDB Atlas URI here
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE
+        value: 7d

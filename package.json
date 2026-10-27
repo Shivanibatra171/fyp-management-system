@@ -1,0 +1,14 @@
+{
+  "name": "fyp-management-system",
+  "version": "1.0.0",
+  "description": "University Final Year Project (FYP) Management & AI Similarity Coordination Portal",
+  "scripts": {
+    "postinstall": "cd backend && npm install --production=false && cd ../frontend && npm install && npm run build",
+    "build": "cd frontend && npm install && npm run build && cd ../backend && npm install",
+    "start": "cd backend && node server.js",
+    "seed": "cd backend && node src/scripts/seedCompletePortalCorpus.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
