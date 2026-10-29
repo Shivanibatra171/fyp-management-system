@@ -3,10 +3,24 @@
   "version": "1.0.0",
   "description": "University Final Year Project (FYP) Management & AI Similarity Coordination Portal",
   "scripts": {
-    "postinstall": "cd backend && npm install --production=false && cd ../frontend && npm install && npm run build",
     "build": "cd frontend && npm install && npm run build && cd ../backend && npm install",
     "start": "cd backend && node server.js",
     "seed": "cd backend && node src/scripts/seedCompletePortalCorpus.js"
+  },
+  "dependencies": {
+    "axios": "^1.20.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.2.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^7.7.0",
+    "mongoose": "^8.4.0",
+    "morgan": "^1.10.0",
+    "multer": "^2.4.0"
   },
   "engines": {
     "node": ">=18.0.0"
