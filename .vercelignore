@@ -1,0 +1,8 @@
+ai-service/
+data_db/
+backend/data_db/
+backend/uploads/*
+!backend/uploads/.gitkeep
+*.log
+cloudflared.exe
+CURRENT_LIVE_URL.txt

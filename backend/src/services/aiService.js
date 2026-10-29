@@ -114,35 +114,39 @@ const checkProposalSimilarity = async (title, abstract) => {
     };
   }
 
-  // 2. Attempt primary FastAPI SentenceTransformer microservice
-  try {
-    const payload = {
-      title: title.trim(),
-      abstract: abstract.trim(),
-      previous_projects: pastProjects.map((proj) => ({
-        id: proj._id.toString(),
-        title: proj.title,
-        abstract: proj.abstract,
-        year: proj.year,
-        domain: proj.domain,
-        technologies: proj.technologies || [],
-      })),
-      threshold: 70.0,
-    };
+  // 2. If external AI microservice is configured, attempt it with short timeout
+  const serviceUrl = process.env.AI_SERVICE_URL;
+  if (serviceUrl && serviceUrl.trim().length > 0) {
+    try {
+      const payload = {
+        title: title.trim(),
+        abstract: abstract.trim(),
+        previous_projects: pastProjects.map((proj) => ({
+          id: proj._id.toString(),
+          title: proj.title,
+          abstract: proj.abstract,
+          year: proj.year,
+          domain: proj.domain,
+          technologies: proj.technologies || [],
+        })),
+        threshold: 70.0,
+      };
 
-    const response = await axios.post(`${getAiServiceUrl()}/check-similarity`, payload, {
-      headers: { 'Content-Type': 'application/json' },
-      timeout: 8000,
-    });
+      const response = await axios.post(`${getAiServiceUrl()}/check-similarity`, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 4000,
+      });
 
-    return response.data;
-  } catch (error) {
-    console.warn(
-      `[AI Service Notice] FastAPI microservice not available (${error.message}). Using embedded semantic NLP engine.`
-    );
-    // 3. Robust Embedded Semantic NLP Fallback (runs locally & in cloud with 0ms latency)
-    return computeFallbackSimilarity(title, abstract, pastProjects, 70.0);
+      return response.data;
+    } catch (error) {
+      console.warn(
+        `[AI Service Notice] External microservice not available (${error.message}). Using embedded semantic NLP engine.`
+      );
+    }
   }
+
+  // 3. Robust Embedded Semantic NLP Engine (runs locally & in cloud with 0ms latency and 0 extra MB)
+  return computeFallbackSimilarity(title, abstract, pastProjects, 70.0);
 };
 
 module.exports = {
