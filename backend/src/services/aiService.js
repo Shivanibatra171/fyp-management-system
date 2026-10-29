@@ -1,7 +1,10 @@
 const axios = require('axios');
 const { PreviousFYP } = require('../models');
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+const getAiServiceUrl = () => {
+  const base = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+  return base.replace(/\/+$/, '');
+};
 
 const STOPWORDS = new Set([
   'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he',
@@ -127,7 +130,7 @@ const checkProposalSimilarity = async (title, abstract) => {
       threshold: 70.0,
     };
 
-    const response = await axios.post(`${AI_SERVICE_URL}/check-similarity`, payload, {
+    const response = await axios.post(`${getAiServiceUrl()}/check-similarity`, payload, {
       headers: { 'Content-Type': 'application/json' },
       timeout: 8000,
     });
