@@ -3,97 +3,97 @@ chcp 65001 >nul
 title University FYP Management System Launcher
 color 0B
 
-set "PATH=D:\;C:\Users\Modern Tech\AppData\Roaming\npm;%PATH%"
+setlocal enabledelayedexpansion
+set "PATH=D:\;C:\Users\Modern Tech\AppData\Roaming\npm;C:\Program Files\Git\cmd;%PATH%"
 
 echo ==============================================================================================
 echo                 UNIVERSITY FINAL YEAR PROJECT (FYP) MANAGEMENT SYSTEM
 echo ==============================================================================================
 echo.
-echo   Initializing all services step-by-step and launching directly into your browser...
+echo   Initializing all system services and launching portal in your browser...
 echo.
 
 REM --------------------------------------------------------------------------------------------
 REM STEP 1: DATABASE (MongoDB Port 27017)
 REM --------------------------------------------------------------------------------------------
-echo   [Step 1/4] Checking Database Service: MongoDB Port 27017...
+echo   [Step 1/5] Checking Database Engine (Port 27017)...
 netstat -ano | findstr /R ":27017\>" | findstr "LISTENING" >nul 2>nul
-if %errorlevel% equ 0 goto DB_RUNNING
-echo              Starting local MongoDB engine...
-start "FYP Database" /min cmd /c "cd /d %~dp0backend && node start_mongo.js"
-timeout /t 3 /nobreak >nul
-goto STEP_AI
+if %errorlevel% equ 0 (
+    echo              [OK] Database is already running.
+) else (
+    echo              Starting local MongoDB engine...
+    start "FYP Database" /min cmd /c "cd /d %~dp0backend && node start_mongo.js"
+    timeout /t 3 /nobreak >nul
+)
 
-:DB_RUNNING
-echo              [OK] Database is already running and ready.
-
-:STEP_AI
 REM --------------------------------------------------------------------------------------------
 REM STEP 2: AI MICROSERVICE (FastAPI Port 8000)
 REM --------------------------------------------------------------------------------------------
-echo   [Step 2/4] Checking AI Similarity Microservice: Port 8000...
+echo   [Step 2/5] Checking AI Similarity Microservice (Port 8000)...
 netstat -ano | findstr /R ":8000\>" | findstr "LISTENING" >nul 2>nul
-if %errorlevel% equ 0 goto AI_RUNNING
-echo              Starting AI Microservice...
-start "FYP AI Service" /min cmd /c "cd /d %~dp0ai-service && .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000"
-timeout /t 3 /nobreak >nul
-goto STEP_BACKEND
+if %errorlevel% equ 0 (
+    echo              [OK] AI Microservice is already running.
+) else (
+    echo              Starting AI Microservice...
+    start "FYP AI Service" /min cmd /c "cd /d %~dp0ai-service && .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000"
+    timeout /t 3 /nobreak >nul
+)
 
-:AI_RUNNING
-echo              [OK] AI Microservice is already running and ready.
-
-:STEP_BACKEND
 REM --------------------------------------------------------------------------------------------
-REM STEP 3: BACKEND API (Express Port 5000)
+REM STEP 3: BACKEND API & WEB SERVER (Port 5000)
 REM --------------------------------------------------------------------------------------------
-echo   [Step 3/4] Checking Backend API Server: Port 5000...
+echo   [Step 3/5] Checking Backend Server (Port 5000)...
 netstat -ano | findstr /R ":5000\>" | findstr "LISTENING" >nul 2>nul
-if %errorlevel% equ 0 goto BACKEND_RUNNING
-echo              Starting Express Backend API...
-start "FYP Backend API" /min cmd /c "cd /d %~dp0backend && node server.js"
-timeout /t 3 /nobreak >nul
-goto STEP_FRONTEND
+if %errorlevel% equ 0 (
+    echo              [OK] Backend server is already running.
+) else (
+    echo              Starting Backend Server...
+    start "FYP Backend" /min cmd /c "cd /d %~dp0backend && node server.js"
+    timeout /t 3 /nobreak >nul
+)
 
-:BACKEND_RUNNING
-echo              [OK] Backend API Server is already running and ready.
-
-:STEP_FRONTEND
 REM --------------------------------------------------------------------------------------------
-REM STEP 4: FRONTEND PORTAL (Vite React Port 5173)
+REM STEP 4: CLOUDFLARE LIVE TUNNEL
 REM --------------------------------------------------------------------------------------------
-echo   [Step 4/4] Checking Frontend React Portal: Port 5173...
-netstat -ano | findstr /R ":5173\>" | findstr "LISTENING" >nul 2>nul
-if %errorlevel% equ 0 goto FRONTEND_RUNNING
-echo              Starting Vite Frontend Dev Server...
-start "FYP Frontend" /min cmd /c "cd /d %~dp0frontend && \"C:\Users\Modern Tech\AppData\Roaming\npm\npm.cmd\" run dev -- --host 127.0.0.1 --port 5173"
-timeout /t 3 /nobreak >nul
-goto LAUNCH_BROWSER
+echo   [Step 4/5] Checking Cloudflare Live Tunnel...
+tasklist /FI "IMAGENAME eq cloudflared.exe" 2>nul | findstr /I "cloudflared.exe" >nul 2>nul
+if %errorlevel% equ 0 (
+    echo              [OK] Live tunnel is already running.
+) else (
+    echo              Starting Live Tunnel Manager...
+    start "FYP Tunnel Manager" /min cmd /c "cd /d %~dp0 && node tunnel_manager.js"
+    timeout /t 4 /nobreak >nul
+)
 
-:FRONTEND_RUNNING
-echo              [OK] Frontend portal is already running and ready.
-
-:LAUNCH_BROWSER
 REM --------------------------------------------------------------------------------------------
-REM STEP 5: LAUNCH DIRECTLY TO BROWSER
+REM STEP 5: DISPLAY STATUS & LAUNCH BROWSER
 REM --------------------------------------------------------------------------------------------
 echo.
 echo ==============================================================================================
-echo   ALL SERVICES OPERATIONAL! OPENING BROWSER DIRECTLY...
+echo                      ALL PORTAL SERVICES ARE OPERATIONAL!
 echo ==============================================================================================
 echo.
-echo   Local Web Portal:     http://localhost:5173
-echo   Online Live Link:     https://invision-insulation-seventh-andrea.trycloudflare.com
-echo   Backend REST API:     http://localhost:5000
-echo   AI Similarity Engine: http://localhost:8000
+echo   Local Web Portal:     http://localhost:5000
+echo   Cloud Vercel Link:    https://fyp-management-system-ten.vercel.app
+
+if exist "%~dp0CURRENT_LIVE_URL.txt" (
+    set /p LIVE_URL=<"%~dp0CURRENT_LIVE_URL.txt"
+    echo   Live Tunnel Link:     !LIVE_URL!
+)
+
 echo.
 echo   ------------------------------------------------------------------------------------------
-echo   PRE-CONFIGURED TEST LOGINS - Password for all is Password@123
+echo   QUICK TEST ACCOUNTS (Password for all is: Password@123)
 echo   ------------------------------------------------------------------------------------------
-echo    - Admin:      admin@university.edu
-echo    - Supervisor: dr.khursheed@university.edu
-echo    - Student:    shivo55batra@gmail.com  /  shivani@university.edu
+echo    - Admin / Coordinator:   admin@university.edu
+echo    - Faculty Supervisor:    dr.khursheed@university.edu
+echo    - Student (CSE):         student@university.edu
 echo   ------------------------------------------------------------------------------------------
 echo.
-start "" "http://localhost:5173"
-echo   [SUCCESS] Browser opened directly to http://localhost:5173
-echo   All services are running. You can keep or minimize this window.
-pause >nul
+
+start "" "http://localhost:5000"
+
+echo   [SUCCESS] Browser opened to http://localhost:5000
+echo   Keep this window open or minimized while using the system.
+echo.
+pause
