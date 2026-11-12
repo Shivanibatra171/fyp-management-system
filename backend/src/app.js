@@ -87,6 +87,23 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+const connectDB = require('./config/db');
+
+// Database connection middleware for Serverless (Vercel) & traditional servers
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api') && req.path !== '/api/health') {
+    try {
+      await connectDB();
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        message: `Database connection error: ${err.message}`,
+      });
+    }
+  }
+  next();
+});
+
 // Mount Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);

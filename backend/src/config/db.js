@@ -1,15 +1,33 @@
-require('dns').setServers(['8.8.8.8', '8.8.4.4']);
+try {
+  require('dns').setServers(['8.8.8.8', '8.8.4.4']);
+} catch (e) {}
+
 const mongoose = require('mongoose');
 
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected && mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  const mongoUri =
+    process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/fyp_management';
+
+  if (!mongoUri) {
+    throw new Error('MONGO_URI is not defined in environment variables');
+  }
+
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000,
+    const conn = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 10000,
     });
-    console.log(`[Database] MongoDB Connected: ${conn.connection.host}:${conn.connection.port}/${conn.connection.name}`);
+    isConnected = true;
+    console.log(`[Database] MongoDB Connected: ${conn.connection.host}`);
+    return conn;
   } catch (error) {
     console.error(`[Database Error] ${error.message}`);
-    process.exit(1);
+    throw error;
   }
 };
 
