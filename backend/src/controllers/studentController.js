@@ -287,8 +287,25 @@ const searchPreviousFyps = async (req, res, next) => {
       query.year = parseInt(year, 10);
     }
 
-    if (domain) {
-      query.domain = new RegExp(domain.trim(), 'i');
+    if (domain && domain.trim()) {
+      const d = domain.trim();
+      if (d === 'Artificial Intelligence' || d === 'AI') {
+        query.domain = /Artificial Intelligence|AI|Machine Learning|Deep Learning|NLP/i;
+      } else if (d === 'Computer Vision') {
+        query.domain = /Computer Vision|Vision/i;
+      } else if (d === 'Cybersecurity' || d.toLowerCase().includes('cyber')) {
+        query.domain = /Cybersecurity|Security/i;
+      } else if (d === 'Web & Cloud' || d.toLowerCase().includes('web') || d.toLowerCase().includes('cloud')) {
+        query.domain = /Web & Cloud|Web|Cloud/i;
+      } else if (d === 'IoT' || d.toLowerCase().includes('iot')) {
+        query.domain = /IoT|Embedded/i;
+      } else if (d === 'Bioinformatics' || d.toLowerCase().includes('bio')) {
+        query.domain = /Bioinformatics|Healthcare/i;
+      } else if (d === 'Blockchain' || d.toLowerCase().includes('block')) {
+        query.domain = /Blockchain|FinTech/i;
+      } else {
+        query.domain = new RegExp(d, 'i');
+      }
     }
 
     if (technology) {

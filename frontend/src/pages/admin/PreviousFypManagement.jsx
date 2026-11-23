@@ -417,8 +417,11 @@ const PreviousFypManagement = () => {
               <option value="">All Domains</option>
               <option value="Artificial Intelligence">AI & Deep Learning</option>
               <option value="Computer Vision">Computer Vision</option>
-              <option value="Web">Web & Cloud</option>
-              <option value="IoT">IoT & Hardware</option>
+              <option value="Web & Cloud">Web & Cloud Computing</option>
+              <option value="IoT">IoT & Embedded Systems</option>
+              <option value="Cybersecurity">Cybersecurity & Networks</option>
+              <option value="Blockchain">Blockchain & FinTech</option>
+              <option value="Bioinformatics">Bioinformatics & Healthcare</option>
             </select>
           </div>
         }
