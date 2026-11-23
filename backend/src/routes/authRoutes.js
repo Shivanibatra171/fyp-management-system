@@ -2,6 +2,7 @@ const express = require('express');
 const {
   register,
   login,
+  googleAuth,
   getMe,
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middleware/authMiddleware');
@@ -11,6 +12,7 @@ const router = express.Router();
 // Public routes
 router.post('/register', register);
 router.post('/login', login);
+router.post('/google', googleAuth);
 
 // Protected routes
 router.get('/me', protect, getMe);

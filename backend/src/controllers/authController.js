@@ -27,12 +27,12 @@ const sendTokenResponse = (user, statusCode, res, message = 'Success') => {
   });
 };
 
-// @desc    Register new student
+// @desc    Register new user (Student, Supervisor, Admin)
 // @route   POST /api/auth/register
 // @access  Public
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, studentId, department, batch, phone } = req.body;
+    const { name, email, password, studentId, department, batch, phone, role } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -68,19 +68,69 @@ const register = async (req, res, next) => {
       }
     }
 
-    // Self-registration is strictly for students
+    const assignedRole = ['student', 'supervisor', 'admin'].includes(role) ? role : 'student';
+
     const user = await User.create({
       name,
       email: email.toLowerCase(),
       password,
-      role: 'student',
-      studentId: studentId || undefined,
+      role: assignedRole,
+      studentId: assignedRole === 'student' ? (studentId || `STU-${Math.floor(1000 + Math.random() * 9000)}`) : undefined,
+      employeeId: assignedRole === 'supervisor' ? `FAC-${Math.floor(100 + Math.random() * 900)}` : undefined,
       department: department || 'Computer Science',
       batch: batch || '',
       phone: phone || '',
     });
 
-    sendTokenResponse(user, 201, res, 'Student account registered successfully.');
+    const roleName = assignedRole.charAt(0).toUpperCase() + assignedRole.slice(1);
+    sendTokenResponse(user, 201, res, `${roleName} account registered successfully.`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Google OAuth / Single Sign-On
+// @route   POST /api/auth/google
+// @access  Public
+const googleAuth = async (req, res, next) => {
+  try {
+    const { email, name, role = 'student' } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google account email is required.',
+      });
+    }
+
+    // Find existing user by email
+    let user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      // First-time Google user - automatically create account with selected role
+      const assignedRole = ['student', 'supervisor', 'admin'].includes(role) ? role : 'student';
+      const defaultPassword = 'Password@123'; // Universal demo/fallback password
+
+      user = await User.create({
+        name: name || email.split('@')[0].replace(/[._]/g, ' '),
+        email: email.toLowerCase(),
+        password: defaultPassword,
+        role: assignedRole,
+        department: 'Computer Science',
+        studentId: assignedRole === 'student' ? `STU-${Math.floor(1000 + Math.random() * 9000)}` : undefined,
+        employeeId: assignedRole === 'supervisor' ? `FAC-${Math.floor(100 + Math.random() * 900)}` : undefined,
+        isActive: true,
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: 'Your account has been deactivated. Please contact the administrator.',
+      });
+    }
+
+    sendTokenResponse(user, 200, res, 'Google sign-in successful.');
   } catch (error) {
     next(error);
   }
@@ -150,5 +200,6 @@ const getMe = async (req, res, next) => {
 module.exports = {
   register,
   login,
+  googleAuth,
   getMe,
 };

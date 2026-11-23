@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
     throw new Error(res.data?.message || 'Login failed');
   };
 
-  // Register handler (students)
+  // Register handler (students, supervisors, admins)
   const register = async (userData) => {
     const res = await api.post('/auth/register', userData);
     if (res.data?.success && res.data?.token) {
@@ -73,6 +73,23 @@ export const AuthProvider = ({ children }) => {
       return authUser;
     }
     throw new Error(res.data?.message || 'Registration failed');
+  };
+
+  // Google Login / Single Sign-On handler
+  const googleLogin = async ({ email, name, role }) => {
+    const res = await api.post('/auth/google', { email, name, role });
+    if (res.data?.success && res.data?.token) {
+      const authToken = res.data.token;
+      const authUser = res.data.user;
+
+      localStorage.setItem('fyp_token', authToken);
+      localStorage.setItem('fyp_user', JSON.stringify(authUser));
+
+      setToken(authToken);
+      setUser(authUser);
+      return authUser;
+    }
+    throw new Error(res.data?.message || 'Google authentication failed');
   };
 
   // Refresh user data from server
@@ -107,6 +124,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!token && !!user,
         login,
         register,
+        googleLogin,
         refreshUser,
         logout,
       }}

@@ -1,20 +1,32 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Lock, Mail, ArrowRight, ShieldCheck, Briefcase, GraduationCap, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Lock, Mail, User, Eye, EyeOff, LogIn, AlertCircle, ShieldCheck, GraduationCap, Users } from 'lucide-react';
+import { GoogleIcon, SparklesAccent, SkylineDecoration } from '../../components/auth/AuthCommon';
+import GoogleAuthModal from '../../components/auth/GoogleAuthModal';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [forgotMsg, setForgotMsg] = useState(false);
 
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
   const sessionExpired = searchParams.get('expired') === 'true';
+
+  const routeByRole = (role) => {
+    if (role === 'admin') navigate('/admin');
+    else if (role === 'supervisor') navigate('/supervisor');
+    else navigate('/student');
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -27,213 +39,269 @@ const LoginPage = () => {
       setError('');
       setSubmitting(true);
       const user = await login(email, password);
-
-      if (user.role === 'admin') navigate('/admin');
-      else if (user.role === 'supervisor') navigate('/supervisor');
-      else navigate('/student');
+      routeByRole(user.role);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Invalid credentials or server not connected.');
+      setError(err.response?.data?.message || err.message || 'Invalid credentials or server not reachable.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const fillCredentials = (demoEmail, demoPass) => {
+  const handleGoogleSignIn = async (googleUser) => {
+    const user = await googleLogin(googleUser);
+    routeByRole(user.role);
+  };
+
+  const fillQuickDemo = (demoEmail, demoPass) => {
     setEmail(demoEmail);
     setPassword(demoPass);
     setError('');
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f1eb] text-[#2b1810] flex items-center justify-center p-4 sm:p-6 lg:p-12">
-      <div className="w-full max-w-6xl bg-white rounded-3xl shadow-xl border border-[#ece1d5] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
-        
-        {/* Left Branding & Test Accounts Panel (Dark Coffee Hero matching Mockup) */}
-        <div className="lg:col-span-5 bg-[#382115] text-white p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden">
-          {/* Subtle background glow */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-caramel-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-[#edeefc] text-[#1e1e2d] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden font-sans">
+      
+      {/* Background Soft Organic Blobs */}
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#e0e3fc] rounded-full blur-3xl pointer-events-none opacity-80" />
+      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#dadafc] rounded-full blur-3xl pointer-events-none opacity-80" />
 
-          <div className="space-y-6 relative z-10">
+      {/* Discrete Quick Test Credentials Banner for Examiners & Teachers */}
+      <div className="mb-4 z-20 flex flex-wrap items-center justify-center gap-2 text-xs text-gray-600 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-indigo-100 shadow-sm">
+        <span className="font-bold text-indigo-700 flex items-center gap-1.5">
+          <ShieldCheck className="w-4 h-4 text-indigo-600" /> Quick Demo Fill:
+        </span>
+        <button
+          type="button"
+          onClick={() => fillQuickDemo('student@university.edu', 'Password@123')}
+          className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold transition"
+        >
+          🎓 Student
+        </button>
+        <button
+          type="button"
+          onClick={() => fillQuickDemo('dr.khursheed@university.edu', 'Password@123')}
+          className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold transition"
+        >
+          👥 Supervisor
+        </button>
+        <button
+          type="button"
+          onClick={() => fillQuickDemo('admin@university.edu', 'Password@123')}
+          className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold transition"
+        >
+          🛡️ Admin
+        </button>
+      </div>
+
+      {/* Main Split Authentication Card */}
+      <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl shadow-indigo-950/10 border border-indigo-100/70 overflow-hidden grid grid-cols-1 md:grid-cols-2 relative z-10 min-h-[580px]">
+        
+        {/* Left Banner (Royal Indigo/Purple Brand Showcase) */}
+        <div className="bg-gradient-to-b from-[#5c50ee] via-[#4f46e5] to-[#4338ca] text-white p-7 sm:p-9 flex flex-col justify-between relative overflow-hidden">
+          
+          {/* Subtle Decorative Circle Glow */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+
+          {/* Top Logo & Title */}
+          <div className="relative z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-caramel-500 flex items-center justify-center font-black text-white text-base shadow-md">
-                FYP
+              <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-sm">
+                <GraduationCap className="w-6 h-6 text-white" />
               </div>
-              <span className="font-extrabold text-lg tracking-tight text-cream-100">
-                University FYP Portal
-              </span>
+              <div>
+                <h1 className="font-extrabold text-xl sm:text-2xl tracking-tight text-white leading-none">
+                  CampusCore
+                </h1>
+                <p className="text-[11px] font-medium text-indigo-200 mt-1 tracking-wider uppercase">
+                  FYP Management System
+                </p>
+              </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-                Final Year Project Coordination System
+            {/* Slogan & Description */}
+            <div className="mt-8">
+              <div className="text-xs sm:text-sm font-bold uppercase tracking-wider text-indigo-200">
+                Plan • Track • Complete
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white mt-1 leading-snug">
+                Your FYP Journey
               </h2>
-              <p className="text-cream-200 text-sm mt-2 leading-relaxed">
-                Centralized platform for proposal submissions, AI-driven similarity checks, supervisor reviews, and milestone progress tracking.
+              <p className="text-xs sm:text-sm text-indigo-100/90 mt-2 leading-relaxed max-w-xs font-normal">
+                A smarter way to manage FYP proposals, progress, and similar project detection.
               </p>
             </div>
-
-            {/* 3 Pre-configured Test Accounts per user request */}
-            <div className="pt-4 border-t border-coffee-700/80 space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-caramel-300 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-caramel-400" />
-                <span>Quick Test Accounts (Click to Fill)</span>
-              </div>
-
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => fillCredentials('admin@university.edu', 'Password@123')}
-                  className="w-full text-left p-3 rounded-xl bg-coffee-800/80 hover:bg-coffee-700/80 border border-coffee-700/60 transition group flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-300 flex items-center justify-center text-xs">
-                      <ShieldCheck className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-white group-hover:text-caramel-300">
-                        Coordinator / Admin
-                      </div>
-                      <div className="text-[11px] text-cream-300">admin@university.edu</div>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-semibold text-caramel-400 bg-coffee-900 px-2 py-0.5 rounded">
-                    Fill &rarr;
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => fillCredentials('dr.khursheed@university.edu', 'Password@123')}
-                  className="w-full text-left p-3 rounded-xl bg-coffee-800/80 hover:bg-coffee-700/80 border border-coffee-700/60 transition group flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-xs">
-                      <Briefcase className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-white group-hover:text-caramel-300">
-                        Supervisor (Dr. Khursheed)
-                      </div>
-                      <div className="text-[11px] text-cream-300">dr.khursheed@university.edu</div>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-semibold text-caramel-400 bg-coffee-900 px-2 py-0.5 rounded">
-                    Fill &rarr;
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => fillCredentials('student@university.edu', 'Password@123')}
-                  className="w-full text-left p-3 rounded-xl bg-coffee-800/80 hover:bg-coffee-700/80 border border-coffee-700/60 transition group flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-caramel-500/20 text-caramel-300 flex items-center justify-center text-xs">
-                      <GraduationCap className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-white group-hover:text-caramel-300">
-                        Student (Ali Ahmed)
-                      </div>
-                      <div className="text-[11px] text-cream-300">student@university.edu</div>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-semibold text-caramel-400 bg-coffee-900 px-2 py-0.5 rounded">
-                    Fill &rarr;
-                  </span>
-                </button>
-              </div>
-            </div>
           </div>
 
-          <div className="text-xs text-cream-300 pt-6">
-            Default Password for all test accounts: <strong className="text-white font-mono">Password@123</strong>
+          {/* Bottom Campus Building Photograph */}
+          <div className="mt-6 rounded-2xl overflow-hidden border border-white/20 shadow-lg relative h-40 sm:h-44 group">
+            <img
+              src="/campus.jpg"
+              alt="University Campus Architecture"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/60 via-transparent to-transparent pointer-events-none" />
           </div>
+
         </div>
 
-        {/* Right Form Panel (Spacious, clean, responsive) */}
-        <div className="lg:col-span-7 p-8 sm:p-12 lg:p-16 flex flex-col justify-center">
-          <div className="max-w-md w-full mx-auto space-y-6">
+        {/* Right Form Panel (Clean White Card matching Mockup) */}
+        <div className="p-7 sm:p-9 lg:p-10 flex flex-col justify-between relative bg-white">
+          
+          {/* Top-Right Decorative Sparkles */}
+          <div className="absolute top-6 right-7">
+            <SparklesAccent className="text-indigo-400" />
+          </div>
+
+          <div>
+            {/* Header */}
             <div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-[#382115] tracking-tight">
-                Sign in to your account
-              </h3>
-              <p className="text-sm text-[#7a6455] mt-1">
-                Enter your university credentials to access your FYP workspace.
+              <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                Welcome Back!
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                Login to your CampusCore account
               </p>
             </div>
 
             {sessionExpired && (
-              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
                 <span>Your session has expired. Please log in again.</span>
               </div>
             )}
 
             {error && (
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-800 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+              <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
                 <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-4">
+            {forgotMsg && (
+              <div className="mt-4 p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs">
+                To reset your password, contact your FYP Coordinator or sign in instantly with Google!
+              </div>
+            )}
+
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="mt-5 space-y-3.5">
+              {/* Email Address */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#5d4638] mb-1.5">
-                  Email Address
-                </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
                     name="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@university.edu"
+                    placeholder="Email Address"
                     required
-                    className="w-full bg-[#fbf8f4] border border-[#dfd1c3] focus:border-[#b5743d] rounded-xl pl-10 pr-4 py-3 text-sm text-[#2b1810] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#b5743d]/20 transition"
+                    className="w-full bg-white border border-gray-200 focus:border-indigo-600 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                   />
                 </div>
               </div>
 
+              {/* Password */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#5d4638] mb-1.5">
-                  Password
-                </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     name="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
+                    placeholder="Password"
                     required
-                    className="w-full bg-[#fbf8f4] border border-[#dfd1c3] focus:border-[#b5743d] rounded-xl pl-10 pr-4 py-3 text-sm text-[#2b1810] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#b5743d]/20 transition"
+                    className="w-full bg-white border border-gray-200 focus:border-indigo-600 rounded-xl pl-10 pr-10 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between pt-0.5">
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-600 select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span>Remember Me</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setForgotMsg(!forgotMsg)}
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+              {/* Primary Login Button */}
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full mt-2 bg-[#382115] hover:bg-[#26140b] text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#382115]/15 transition disabled:opacity-50"
+                className="w-full bg-[#5c50ee] hover:bg-[#4f43e5] text-white font-bold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 transition active:scale-[0.99] disabled:opacity-50 mt-1"
               >
-                {submitting ? 'Signing in...' : 'Sign In to Portal'}
-                <ArrowRight className="w-4 h-4" />
+                <LogIn className="w-4 h-4" />
+                <span>{submitting ? 'Logging in...' : 'Login'}</span>
               </button>
             </form>
 
-            <div className="pt-4 text-center text-xs text-[#7a6455]">
-              New student joining this semester?{' '}
-              <Link to="/register" className="font-bold text-[#a35f2f] hover:underline underline-offset-4">
-                Create Student Account &rarr;
+            {/* Divider */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs text-gray-400">
+                <span className="bg-white px-3 font-medium">or</span>
+              </div>
+            </div>
+
+            {/* Google Sign-in Button */}
+            <button
+              type="button"
+              onClick={() => setShowGoogleModal(true)}
+              className="w-full bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-semibold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2.5 shadow-sm transition active:scale-[0.99]"
+            >
+              <GoogleIcon className="w-4 h-4" />
+              <span>Continue with Google</span>
+            </button>
+
+            {/* Footer Navigation */}
+            <div className="text-center text-xs text-gray-600 mt-4">
+              Don't have an account?{' '}
+              <Link
+                to="/register"
+                className="font-bold text-indigo-600 hover:text-indigo-700 ml-1 inline-flex items-center gap-0.5 hover:underline"
+              >
+                Sign Up &gt;
               </Link>
             </div>
           </div>
+
+          {/* Delicate Bottom Skyline Decoration */}
+          <SkylineDecoration className="w-full text-indigo-200/50 mt-4" />
+
         </div>
 
       </div>
+
+      {/* Google Authentication Modal */}
+      <GoogleAuthModal
+        isOpen={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+        onGoogleSignIn={handleGoogleSignIn}
+        defaultRole="student"
+      />
+
     </div>
   );
 };
